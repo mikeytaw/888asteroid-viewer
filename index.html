@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Floating Asteroids</title>
+  <style>
+    html, body { margin: 0; overflow: hidden; background: transparent; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+<canvas id="asteroid-canvas"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+  const canvas = document.getElementById("asteroid-canvas");
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.z = 10;
+
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(5, 5, 5).normalize();
+  scene.add(light);
+
+  const loader = new THREE.GLTFLoader();
+  const clones = [];
+  const totalClones = 8;
+
+  loader.load("Asset1-v1.glb", gltf => {
+    const base = gltf.scene;
+    for (let i = 0; i < totalClones; i++) {
+      const clone = base.clone(true);
+      clone.position.set(
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 12,
+        (Math.random() - 0.5) * 6 - 2
+      );
+      const scale = 0.8 + Math.random() * 0.6;
+      clone.scale.set(scale, scale, scale);
+      clone.userData.rotationSpeed = {
+        x: (Math.random() - 0.5) * 0.01,
+        y: (Math.random() - 0.5) * 0.01
+      };
+      scene.add(clone);
+      clones.push(clone);
+    }
+    animate();
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    clones.forEach(c => {
+      c.rotation.x += c.userData.rotationSpeed.x;
+      c.rotation.y += c.userData.rotationSpeed.y;
+    });
+    renderer.render(scene, camera);
+  }
+
+  window.addEventListener("resize", () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  });
+</script>
+</body>
+</html>
